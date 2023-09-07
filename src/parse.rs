@@ -115,6 +115,20 @@ fn read_entry<R: Read, T: FromBytes>(
     ))
 }
 
+/// Parse utmp entries.
+///
+/// It parses utmp entries using the native utmp format in the target platform.
+pub fn parse_utmp() -> Result<Vec<UtmpEntry>, ParseError> {
+    UtmpParser::from_path("/var/run/utmp")?.collect()
+}
+
+/// Parse wtmp entries.
+///
+/// It parses wtmp entries using the native utmp format in the target platform.
+pub fn parse_wtmp() -> Result<Vec<UtmpEntry>, ParseError> {
+    UtmpParser::from_path("/var/log/wtmp")?.collect()
+}
+
 /// Parse utmp entries from the given path.
 ///
 /// It parses the given path using the native utmp format in the target platform.
