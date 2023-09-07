@@ -1,19 +1,23 @@
-# utmp-rs
+# `utwt`
 
-[![Crates.io](https://img.shields.io/crates/v/utmp-rs.svg)](https://crates.io/crates/utmp-rs)
-[![Docs](https://docs.rs/utmp-rs/badge.svg)](https://docs.rs/utmp-rs)
+[![Crates.io](https://img.shields.io/crates/v/utwt.svg)](https://crates.io/crates/utwt)
+[![Docs](https://docs.rs/utwt/badge.svg)](https://docs.rs/utwt)
 
 <!-- cargo-sync-readme start -->
 
 A Rust crate for parsing `utmp` files like `/var/run/utmp` and `/var/log/wtmp`.
+
+> Note: This project has been forked from [utmp-rs](https://github.com/upsuper/utmp-rs) since September of 2023, but a lot has changed.
 
 ## Usage
 
 Simplest way is to use `parse_from_*` functions,
 which returns a `Vec<UtmpEntry>` on success:
 ```rust
+let entries = utwt::parse_utmp()?;
+// or specify a path explictly
 let entries = utwt::parse_from_path("/var/run/utmp")?;
-// ...
+//
 ```
 
 If you don't need to collect them all,
