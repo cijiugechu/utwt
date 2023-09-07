@@ -15,7 +15,7 @@ Simplest way is to use `parse_from_*` functions,
 which returns a `Vec<UtmpEntry>` on success:
 ```rust
 let entries = utwt::parse_utmp()?;
-// or specify a path explictly
+// or specify a path explicitly
 let entries = utwt::parse_from_path("/var/run/utmp")?;
 //
 ```
