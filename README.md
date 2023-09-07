@@ -12,14 +12,14 @@ A Rust crate for parsing `utmp` files like `/var/run/utmp` and `/var/log/wtmp`.
 Simplest way is to use `parse_from_*` functions,
 which returns a `Vec<UtmpEntry>` on success:
 ```rust
-let entries = utmp_rs::parse_from_path("/var/run/utmp")?;
+let entries = utwt::parse_from_path("/var/run/utmp")?;
 // ...
 ```
 
 If you don't need to collect them all,
 `UtmpParser` can be used as an iterator:
 ```rust
-use utmp_rs::UtmpParser;
+use utwt::UtmpParser;
 for entry in UtmpParser::from_path("/var/run/utmp")? {
     let entry = entry?;
     // ...

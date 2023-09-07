@@ -14,7 +14,7 @@ fn main() -> Result<()> {
         }
     };
 
-    let entries = utmp_rs::parse_from_path(&path)?;
+    let entries = utwt::parse_from_path(&path)?;
     for entry in entries {
         println!("{:?}", entry);
     }

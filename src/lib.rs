@@ -7,7 +7,7 @@
 //! ```
 //! # use anyhow::Result;
 //! # fn main() -> Result<()> {
-//! let entries = utmp_rs::parse_from_path("/var/run/utmp")?;
+//! let entries = utwt::parse_from_path("/var/run/utmp")?;
 //! // ...
 //! # Ok(())
 //! # }
@@ -17,7 +17,7 @@
 //! `UtmpParser` can be used as an iterator:
 //! ```
 //! # use anyhow::Result;
-//! use utmp_rs::UtmpParser;
+//! use utwt::UtmpParser;
 //! # fn main() -> Result<()> {
 //! for entry in UtmpParser::from_path("/var/run/utmp")? {
 //!     let entry = entry?;

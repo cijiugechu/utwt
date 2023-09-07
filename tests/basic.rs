@@ -5,7 +5,7 @@ use std::io::{self, BufReader, Read};
 use std::iter::FromIterator;
 use std::path::PathBuf;
 use time::OffsetDateTime;
-use utmp_rs::{parse_from_path, Utmp32Parser, Utmp64Parser, UtmpEntry};
+use utwt::{parse_from_path, Utmp32Parser, Utmp64Parser, UtmpEntry};
 
 static SAMPLES_PATH: Lazy<PathBuf> =
     Lazy::new(|| PathBuf::from_iter(&[env!("CARGO_MANIFEST_DIR"), "tests", "samples"]));
