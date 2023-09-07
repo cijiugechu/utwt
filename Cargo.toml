@@ -11,14 +11,11 @@ edition = "2018"
 license = "MIT"
 
 [dependencies]
-time = "0.3"
-libc = "0.2.66"
-utmp-raw = { version = "0.3.0", path = "raw" }
+time      = "0.3"
+libc      = "0.2.66"
+utmp-raw  = "0.3.0"
 thiserror = "1.0.10"
-zerocopy = "0.6"
-
-[workspace]
-members = ["raw"]
+zerocopy  = "0.6"
 
 [dev-dependencies]
 anyhow = "1.0.26"
