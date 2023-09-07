@@ -3,7 +3,6 @@ use std::convert::TryFrom;
 use std::ffi::CStr;
 use std::os::raw::c_short;
 use thiserror::Error;
-use time::OffsetDateTime;
 use utmp_raw::x32::utmp as utmp32;
 use utmp_raw::x64::{timeval as timeval64, utmp as utmp64};
 
@@ -18,39 +17,39 @@ pub enum UtmpEntry {
         /// Kernel version
         kernel_version: String,
         /// Time entry was made
-        time: OffsetDateTime,
+        time_in_micros: i64,
     },
     /// Time of system boot
     BootTime {
         /// Kernel version
         kernel_version: String,
         /// Time entry was made
-        time: OffsetDateTime,
+        time_in_micros: i64,
     },
     /// Time of system shutdown
     ShutdownTime {
         /// Kernel version
         kernel_version: String,
         /// Time entry was made
-        time: OffsetDateTime,
+        time_in_micros: i64,
     },
     /// Time after system clock change
-    NewTime(OffsetDateTime),
+    NewTime(i64),
     /// Time before system clock change
-    OldTime(OffsetDateTime),
+    OldTime(i64),
     /// Process spawned by `init(8)`
     InitProcess {
         /// PID of the init process
         pid: pid_t,
         /// Time entry was made
-        time: OffsetDateTime,
+        time_in_micros: i64,
     },
     /// Session leader process for user login
     LoginProcess {
         /// PID of the login process
         pid: pid_t,
         /// Time entry was made
-        time: OffsetDateTime,
+        time_in_micros: i64,
     },
     /// Normal process
     UserProcess {
@@ -65,7 +64,7 @@ pub enum UtmpEntry {
         /// Session ID (`getsid(2)`)
         session: pid_t,
         /// Time entry was made
-        time: OffsetDateTime,
+        time_in_micros: i64,
         // TODO: Figure out the correct byte order to parse the address
         // address: IpAddr,
     },
@@ -76,7 +75,7 @@ pub enum UtmpEntry {
         /// Device name of tty
         line: String,
         /// Time entry was made
-        time: OffsetDateTime,
+        time_in_micros: i64,
     },
     /// Not implemented
     #[non_exhaustive]
@@ -115,32 +114,32 @@ impl<'a> TryFrom<&'a utmp64> for UtmpEntry {
             utmp_raw::RUN_LVL => {
                 let kernel_version =
                     string_from_bytes(&from.ut_host).map_err(UtmpError::InvalidHost)?;
-                let time = time_from_tv(from.ut_tv)?;
+                let time_in_micros = time_from_tv(from.ut_tv)?;
                 if from.ut_line[0] == b'~' && from.ut_user.starts_with(b"shutdown\0") {
                     UtmpEntry::ShutdownTime {
                         kernel_version,
-                        time,
+                        time_in_micros,
                     }
                 } else {
                     UtmpEntry::RunLevel {
                         kernel_version,
-                        time,
+                        time_in_micros,
                     }
                 }
             }
             utmp_raw::BOOT_TIME => UtmpEntry::BootTime {
                 kernel_version: string_from_bytes(&from.ut_host).map_err(UtmpError::InvalidHost)?,
-                time: time_from_tv(from.ut_tv)?,
+                time_in_micros: time_from_tv(from.ut_tv)?,
             },
             utmp_raw::NEW_TIME => UtmpEntry::NewTime(time_from_tv(from.ut_tv)?),
             utmp_raw::OLD_TIME => UtmpEntry::OldTime(time_from_tv(from.ut_tv)?),
             utmp_raw::INIT_PROCESS => UtmpEntry::InitProcess {
                 pid: from.ut_pid,
-                time: time_from_tv(from.ut_tv)?,
+                time_in_micros: time_from_tv(from.ut_tv)?,
             },
             utmp_raw::LOGIN_PROCESS => UtmpEntry::LoginProcess {
                 pid: from.ut_pid,
-                time: time_from_tv(from.ut_tv)?,
+                time_in_micros: time_from_tv(from.ut_tv)?,
             },
             utmp_raw::USER_PROCESS => UtmpEntry::UserProcess {
                 pid: from.ut_pid,
@@ -148,12 +147,12 @@ impl<'a> TryFrom<&'a utmp64> for UtmpEntry {
                 user: string_from_bytes(&from.ut_user).map_err(UtmpError::InvalidUser)?,
                 host: string_from_bytes(&from.ut_host).map_err(UtmpError::InvalidHost)?,
                 session: from.ut_session as pid_t,
-                time: time_from_tv(from.ut_tv)?,
+                time_in_micros: time_from_tv(from.ut_tv)?,
             },
             utmp_raw::DEAD_PROCESS => UtmpEntry::DeadProcess {
                 pid: from.ut_pid,
                 line: string_from_bytes(&from.ut_line).map_err(UtmpError::InvalidLine)?,
-                time: time_from_tv(from.ut_tv)?,
+                time_in_micros: time_from_tv(from.ut_tv)?,
             },
             utmp_raw::ACCOUNTING => UtmpEntry::Accounting,
             _ => return Err(UtmpError::UnknownType(from.ut_type)),
@@ -176,13 +175,12 @@ pub enum UtmpError {
     InvalidHost(Box<[u8]>),
 }
 
-fn time_from_tv(tv: timeval64) -> Result<OffsetDateTime, UtmpError> {
+fn time_from_tv(tv: timeval64) -> Result<i64, UtmpError> {
     let timeval64 { tv_sec, tv_usec } = tv;
     if tv_usec < 0 {
         return Err(UtmpError::InvalidTime(tv));
     }
-    let usec = i128::from(tv_sec) * 1_000_000 + i128::from(tv_usec);
-    OffsetDateTime::from_unix_timestamp_nanos(usec * 1000).map_err(|_| UtmpError::InvalidTime(tv))
+    Ok(tv_sec * 1_000_000 + tv_usec)
 }
 
 fn string_from_bytes(bytes: &[u8]) -> Result<String, Box<[u8]>> {
