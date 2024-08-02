@@ -110,9 +110,7 @@ fn read_entry<R: Read, T: FromBytes>(
             Err(e) => return Err(e.into()),
         }
     }
-    Ok(Some(
-        Ref::<_, T>::new(buffer).unwrap().into_ref(),
-    ))
+    Ok(Some(Ref::<_, T>::new(buffer).unwrap().into_ref()))
 }
 
 /// Parse utmp entries.
